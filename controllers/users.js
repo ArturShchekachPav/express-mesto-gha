@@ -14,11 +14,15 @@ const getUserById = (req, res) => {
 
   return User.findById(userId)
     .then((user) => {
+      if(!user) {
+        return res.status(404).send({message: "Запрашиваемый пользователь не найден"});
+      }
+
       return res.status(200).send(user);
     })
     .catch((err) => {
-      if(err.name === "CastError") {
-        return res.status(404).send({message: "Запрашиваемый пользователь не найден"});
+      if(err.name === "CastError" || err.name === "CastError") {
+        return res.status(400).send({message: "Переданы некорректные данные для поиска пользователя пользователя"});
       }
 
       return res.status(500).send({message: "Ошибка сервера"});
@@ -34,8 +38,8 @@ const createUser = (req, res) => {
     })
     .catch((err) => {
       console.log(err);
-      if(err.name === "ValidationError") {
-        return res.status(400).send({message: 'Переданы некорректные данные при создании пользователя'});
+      if(err.name === "CastError" || err.name === "CastError") {
+        return res.status(400).send({message: "Переданы некорректные данные для cоздания пользователя"});
       }
       return res.status(500).send({message: "Ошибка сервера"});
     });
@@ -47,15 +51,16 @@ const updateProfile = (req, res) => {
 
   return User.findByIdAndUpdate(_id, { name, about }, {new: true, runValidators: true})
     .then(user => {
+      if(!user) {
+        return res.status(404).send({message: "Запрашиваемый профиль не найден"});
+      }
+
       return res.status(200).send(user)
     })
     .catch(err => {
-      if(err.name === "ValidationError") {
+      if(err.name === "ValidationError" || err.name === "CastError") {
         return res.status(400).send({message: 'Переданы некорректные данные при обновлении профиля'});
-      } else if(err.name === "CastError") {
-        return res.status(404).send({message: "Запрашиваемый пользователь не найден"});
       }
-
       return res.status(500).send({message: 'Ошибка сервера'})
     });
 };
@@ -66,13 +71,15 @@ const updateAvatar = (req, res) => {
 
   return User.findByIdAndUpdate(_id, { avatar }, {new: true, runValidators: true})
     .then(user => {
+      if(!user) {
+        return res.status(404).send({message: "Запрашиваемый пользователь не найден"});
+      }
+
       return res.status(200).send(user)
     })
     .catch(err => {
-      if(err.name === "ValidationError") {
+      if(err.name === "ValidationError" || err.name === "CastError") {
         return res.status(400).send({message: 'Переданы некорректные данные при обновлении аватара'});
-      } else if(err.name === "CastError") {
-        return res.status(404).send({message: "Запрашиваемый пользователь не найден"});
       }
 
       return res.status(500).send({message: 'Ошибка сервера'})
