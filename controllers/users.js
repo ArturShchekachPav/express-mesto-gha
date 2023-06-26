@@ -38,7 +38,7 @@ const createUser = (req, res) => {
     })
     .catch((err) => {
       console.log(err);
-      if(err.name === "CastError" || err.name === "CastError") {
+      if(err.name === "ValidationError" || err.name === "CastError") {
         return res.status(400).send({message: "Переданы некорректные данные для cоздания пользователя"});
       }
       return res.status(500).send({message: "Ошибка сервера"});
