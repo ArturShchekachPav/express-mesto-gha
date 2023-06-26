@@ -1,11 +1,12 @@
 const User = require('../models/user');
+const {NOT_FOUND_ERROR_CODE, INCORRECT_DATA_ERROR_CODE, DEFAULT_ERROR_CODE} = require('../utils/constants')
 
 const getUsers = (req, res) => {
   return User.find({})
     .then((users) => {
       return res.status(200).send(users);
     }).catch(err => {
-      return res.status(500).send({message: 'Ошибка сервера'})
+      return res.status(DEFAULT_ERROR_CODE).send({message: 'Ошибка сервера'})
     });
 };
 
@@ -15,17 +16,17 @@ const getUserById = (req, res) => {
   return User.findById(userId)
     .then((user) => {
       if(!user) {
-        return res.status(404).send({message: "Запрашиваемый пользователь не найден"});
+        return res.status(NOT_FOUND_ERROR_CODE).send({message: "Запрашиваемый пользователь не найден"});
       }
 
       return res.status(200).send(user);
     })
     .catch((err) => {
       if(err.name === "CastError" || err.name === "CastError") {
-        return res.status(400).send({message: "Переданы некорректные данные для поиска пользователя пользователя"});
+        return res.status(INCORRECT_DATA_ERROR_CODE).send({message: "Переданы некорректные данные для поиска пользователя пользователя"});
       }
 
-      return res.status(500).send({message: "Ошибка сервера"});
+      return res.status(DEFAULT_ERROR_CODE).send({message: "Ошибка сервера"});
     });
 };
 
@@ -39,9 +40,9 @@ const createUser = (req, res) => {
     .catch((err) => {
       console.log(err);
       if(err.name === "ValidationError" || err.name === "CastError") {
-        return res.status(400).send({message: "Переданы некорректные данные для cоздания пользователя"});
+        return res.status(INCORRECT_DATA_ERROR_CODE).send({message: "Переданы некорректные данные для cоздания пользователя"});
       }
-      return res.status(500).send({message: "Ошибка сервера"});
+      return res.status(DEFAULT_ERROR_CODE).send({message: "Ошибка сервера"});
     });
 };
 
@@ -52,16 +53,16 @@ const updateProfile = (req, res) => {
   return User.findByIdAndUpdate(_id, { name, about }, {new: true, runValidators: true})
     .then(user => {
       if(!user) {
-        return res.status(404).send({message: "Запрашиваемый профиль не найден"});
+        return res.status(NOT_FOUND_ERROR_CODE).send({message: "Запрашиваемый профиль не найден"});
       }
 
       return res.status(200).send(user)
     })
     .catch(err => {
       if(err.name === "ValidationError" || err.name === "CastError") {
-        return res.status(400).send({message: 'Переданы некорректные данные при обновлении профиля'});
+        return res.status(INCORRECT_DATA_ERROR_CODE).send({message: 'Переданы некорректные данные при обновлении профиля'});
       }
-      return res.status(500).send({message: 'Ошибка сервера'})
+      return res.status(DEFAULT_ERROR_CODE).send({message: 'Ошибка сервера'})
     });
 };
 
@@ -72,17 +73,17 @@ const updateAvatar = (req, res) => {
   return User.findByIdAndUpdate(_id, { avatar }, {new: true, runValidators: true})
     .then(user => {
       if(!user) {
-        return res.status(404).send({message: "Запрашиваемый пользователь не найден"});
+        return res.status(NOT_FOUND_ERROR_CODE).send({message: "Запрашиваемый пользователь не найден"});
       }
 
       return res.status(200).send(user)
     })
     .catch(err => {
       if(err.name === "ValidationError" || err.name === "CastError") {
-        return res.status(400).send({message: 'Переданы некорректные данные при обновлении аватара'});
+        return res.status(INCORRECT_DATA_ERROR_CODE).send({message: 'Переданы некорректные данные при обновлении аватара'});
       }
 
-      return res.status(500).send({message: 'Ошибка сервера'})
+      return res.status(DEFAULT_ERROR_CODE).send({message: 'Ошибка сервера'})
     });
 };
 
