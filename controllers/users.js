@@ -1,4 +1,11 @@
 const User = require('../models/user');
+//npm i validator
+const validator = require('validator');
+// npm i bcypt
+const bcrypt = require('bcrypt');
+// npm i jsonwebtoken
+const jwt = require('jsonwebtoken');
+
 const { NOT_FOUND_ERROR_CODE, INCORRECT_DATA_ERROR_CODE, DEFAULT_ERROR_CODE } = require('../utils/constants');
 
 const getUsers = (req, res) => User.find({})
@@ -26,8 +33,13 @@ const getUserById = (req, res) => {
 
 const createUser = (req, res) => {
   const newUserData = req.body;
-
-  return User.create(newUserData)
+  
+  if(!validator.isEmail(newUserData.email)) {
+    return res.status(INCORRECT_DATA_ERROR_CODE).send({ message: 'Передан некорректный email' });
+  }
+  
+  bcrypt.hash(req.body.password)
+  .then(hash => User.create(password: hash, ...newUserData))
     .then((newUser) => res.status(201).send(newUser))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -78,10 +90,29 @@ const updateAvatar = (req, res) => {
     });
 };
 
+const login = (req, red) => {
+  const {email, password} = req.body;
+  
+  if(!validator.isEmail(email)) {
+    return res.status(404).send({message: 'Передана некорректная почиа'});
+  }
+  
+  return User.findUserByCredentials(email, password)
+  .then(user =>{
+    const token = jwt.sign({_id: user._id}, 'some-secret-key', {expiresIn: '7d'});
+    
+    res.send({token})
+  })
+  .catch(err => {
+    res.status(401).send({message: err.message})
+  })
+}
+
 module.exports = {
   getUsers,
   getUserById,
   createUser,
   updateProfile,
   updateAvatar,
+  login
 };
