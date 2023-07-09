@@ -49,6 +49,26 @@ const createUser = (req, res) => {
     });
 };
 
+const getMyProfileData = (req, res) => {
+  const _id = req.user;
+  
+  return User.findById(_id)
+    .then((user) => {
+      if (!user) {
+        return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Запрашиваемый пользователь не найден' });
+      }
+
+      return res.send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(INCORRECT_DATA_ERROR_CODE).send({ message: 'Переданы некорректные данные для поиска пользователя пользователя' });
+      }
+
+      return res.status(DEFAULT_ERROR_CODE).send({ message: 'Ошибка сервера' });
+    });
+};
+
 const updateProfile = (req, res) => {
   const { name, about } = req.body;
   const { _id } = req.user;
@@ -114,5 +134,6 @@ module.exports = {
   createUser,
   updateProfile,
   updateAvatar,
-  login
+  login,
+  getMyProfileData
 };

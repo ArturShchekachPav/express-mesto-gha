@@ -21,14 +21,10 @@ const limiter = rateLimit({
 
 app.use(helmet());
 app.use(limiter);
-app.use((req, res, next) => {
-  req.user = {
-    _id: '649814a3354441ec8ab3f73d', // вставьте сюда _id созданного в предыдущем пункте пользователя
-  };
-
-  next();
-});
 app.use(bodyParser.json());
 app.use(routes);
+app.use((err, req, red, next) => {
+  res.send({message: err.message})
+})
 
 app.listen(PORT);

@@ -8,7 +8,7 @@ const getCards = (req, res) => Card.find({})
 
 const createCard = (req, res) => {
   const { name, link } = req.body;
-  const { _id } = req.user;
+  const _id = req.user;
 
   return Card.create({ name, link, owner: _id })
     .then((newCard) => res.status(201).send(newCard))
@@ -28,6 +28,10 @@ const deleteCardById = (req, res) => {
       if (!card) {
         return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Запрашиваемая карточка не найдена' });
       }
+      
+      if(card.owner._id !== req.user) {
+        return res.status(403).send({message: 'Это не ваша карточка'})
+      }
 
       return res.send(card);
     }).catch((err) => {
@@ -41,7 +45,7 @@ const deleteCardById = (req, res) => {
 
 const likeCard = (req, res) => Card.findByIdAndUpdate(
   req.params.cardId,
-  { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
+  { $addToSet: { likes: req.user } }, // добавить _id в массив, если его там нет
   { new: true },
 ).then((card) => {
   if (!card) {
@@ -59,7 +63,7 @@ const likeCard = (req, res) => Card.findByIdAndUpdate(
 
 const dislikeCard = (req, res) => Card.findByIdAndUpdate(
   req.params.cardId,
-  { $pull: { likes: req.user._id } }, // добавить _id в массив, если его там нет
+  { $pull: { likes: req.user } }, // добавить _id в массив, если его там нет
   { new: true },
 ).then((card) => {
   if (!card) {
