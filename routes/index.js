@@ -1,10 +1,9 @@
 const router = require('express').Router();
+const { Joi, celebrate } = require('celebrate');
 const userRoutes = require('./user');
 const cardRoutes = require('./card');
-const {createUser, login} = require('../controllers/users')
-const { NOT_FOUND_ERROR_CODE } = require('../utils/constants');
+const { createUser, login } = require('../controllers/users');
 const auth = require('../middlewares/auth');
-const {Joi, celebrate} = require('celebrate');
 
 router.post('/signin', celebrate({
   body: Joi.object().keys({

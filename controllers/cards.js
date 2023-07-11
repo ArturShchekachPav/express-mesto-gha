@@ -33,7 +33,7 @@ const deleteCardById = (req, res, next) => {
         throw new NotFoundError('Запрашиваемая карточка не найдена');
       }
 
-      if(card.owner._id !== req.user) {
+      if (card.owner._id !== req.user) {
         throw new ForbiddenError('Это не ваша карточка');
       }
 

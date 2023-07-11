@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const validator = require('validator');
 const IncorrectRequestError = require('../errors/incorrect-request-error');
 
 const userSchema = new mongoose.Schema({
@@ -23,7 +24,7 @@ const userSchema = new mongoose.Schema({
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     validate: {
       validator: function (value) {
-        return /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/.test(value);
+        return /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)/.test(value);
       },
     },
   },
@@ -31,6 +32,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    validate: {
+      validator: function (value) {
+        return validator.isEmail(value);
+      },
+    },
   },
   password: {
     type: String,
@@ -40,20 +46,20 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.statics.findUserByCredentials = function (email, password) {
-  return this.findOne({email}).select('+password')
-  .then((user) => {
-    if(!user) {
-      throw new IncorrectRequestError('Неправильные почта или пароль');
-    }
-
-    return bcrypt.compare(password, user.password).then(matched => {
-      if(!matched) {
+  return this.findOne({ email }).select('+password')
+    .then((user) => {
+      if (!user) {
         throw new IncorrectRequestError('Неправильные почта или пароль');
       }
 
-      return user;
+      return bcrypt.compare(password, user.password).then((matched) => {
+        if (!matched) {
+          throw new IncorrectRequestError('Неправильные почта или пароль');
+        }
+
+        return user;
+      });
     });
-  });
 };
 
 module.exports = mongoose.model('user', userSchema);
