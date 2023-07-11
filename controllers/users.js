@@ -33,8 +33,8 @@ const getUserById = (req, res, next) => {
 const createUser = (req, res, next) => {
   bcrypt.hash(req.body.password, 10)
     .then((hash) => User.create({
+      ...req.body,
       password: hash,
-      ...req.body
     }))
     .then((newUser) => {
       return User.findById(newUser._id).then(user => res.status(CREATED_CODE).send(user))
