@@ -22,6 +22,6 @@ router.post('/signup', celebrate({
 }), createUser);
 router.use('/users', auth, userRoutes);
 router.use('/cards', auth, cardRoutes);
-router.use('*', (req, res) => res.status(500).send({ message: 'некорретный путь запроса' }));
+router.use('*', (req, res) => res.status(404).send({ message: 'некорретный путь запроса' }));
 
 module.exports = router;
