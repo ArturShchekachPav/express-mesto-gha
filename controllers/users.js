@@ -10,6 +10,26 @@ const CREATED_CODE = require('../utils/constants');
 const getUsers = (req, res, next) => User.find({})
   .then((users) => res.send(users)).catch(next);
 
+const getUserById = (req, res, next) => {
+  const { userId } = req.params;
+
+  return User.findById(userId)
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('Нет пользователя с таким id');
+      }
+
+      return res.send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new IncorrectRequestError('Переданы некорректные данные для поиска пользователя пользователя'));
+      }
+
+      next(err);
+    });
+};
+
 const createUser = (req, res, next) => {
   bcrypt.hash(req.body.password, 10)
     .then((hash) => User.create({
@@ -114,6 +134,7 @@ const login = (req, res, next) => {
 
 module.exports = {
   getUsers,
+  getUserById,
   createUser,
   updateProfile,
   updateAvatar,
