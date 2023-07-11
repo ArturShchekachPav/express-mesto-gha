@@ -36,7 +36,9 @@ const createUser = (req, res, next) => {
       password: hash,
       ...req.body
     }))
-    .then((newUser) => res.status(CREATED_CODE).send(newUser))
+    .then((newUser) => {
+      return User.findById(newUser._id).then(user => res.status(CREATED_CODE).send(user))
+    })
     .catch((err) => {
       if (err.code === 11000) {
         next(new ConflictError('Пользователь с такой почтой уже зарегистрирован'));
