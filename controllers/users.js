@@ -1,11 +1,10 @@
-const validator = require('validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-error');
 const IncorrectRequestError = require('../errors/incorrect-request-error');
 const ConflictError = require('../errors/conflict-error');
-const CREATED_CODE = require('../utils/constants');
+const { CREATED_CODE } = require('../utils/constants');
 
 const getUsers = (req, res, next) => User.find({})
   .then((users) => res.send(users)).catch(next);
@@ -24,9 +23,9 @@ const getUserById = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new IncorrectRequestError('Переданы некорректные данные для поиска пользователя пользователя'));
+      } else {
+        next(err);
       }
-
-      next(err);
     });
 };
 
@@ -41,13 +40,11 @@ const createUser = (req, res, next) => {
     .catch((err) => {
       if (err.code === 11000) {
         next(new ConflictError('Пользователь с такой почтой уже зарегистрирован'));
-      }
-
-      if (err.name === 'ValidationError') {
+      } else if (err.name === 'ValidationError') {
         next(new IncorrectRequestError('Переданы некорректные данные для cоздания пользователя'));
+      } else {
+        next(err);
       }
-
-      next(err);
     });
 };
 
@@ -65,9 +62,9 @@ const getMyProfileData = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new IncorrectRequestError('Переданы некорректные данные для поиска пользователя пользователя'));
+      } else {
+        next(err);
       }
-
-      next(err);
     });
 };
 
@@ -86,8 +83,9 @@ const updateProfile = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
         next(new IncorrectRequestError('Переданы некорректные данные при обновлении профиля'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -106,18 +104,14 @@ const updateAvatar = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
         next(new IncorrectRequestError('Переданы некорректные данные при обновлении аватара'));
+      } else {
+        next(err);
       }
-
-      next(err);
     });
 };
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
-
-  if (!validator.isEmail(email)) {
-    return next(new IncorrectRequestError('Передана некорректная почта'));
-  }
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
@@ -126,6 +120,7 @@ const login = (req, res, next) => {
       res.cookie('jwt', token, {
         maxAge: 3600000,
         httpOnly: true,
+        sameSite: true,
       }).send({ message: 'Успешная авторизация' });
     })
     .catch(next);
