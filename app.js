@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const routes = require('./routes');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
+const routes = require('./routes');
 
 const { PORT = 3000 } = process.env;
 
@@ -26,18 +26,20 @@ app.use(limiter);
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(routes);
+
 app.use(errors());
-app.use((err, req, res) => {
-const {statusCode = 500, message} = err;
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
 
   res
     .status(statusCode)
     .send({
-      // проверяем статус и выставляем сообщение в зависимости от него
       message: statusCode === 500
         ? 'На сервере произошла ошибка'
-        : message
+        : message,
     });
-})
+
+  next();
+});
 
 app.listen(PORT);

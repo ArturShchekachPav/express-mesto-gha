@@ -1,7 +1,7 @@
-const User = require('../models/user');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-error');
 const IncorrectRequestError = require('../errors/incorrect-request-error');
 const ConflictError = require('../errors/conflict-error');
@@ -31,19 +31,16 @@ const getUserById = (req, res, next) => {
 };
 
 const createUser = (req, res, next) => {
-  if(!validator.isEmail(req.body.email)) {
-    return next(new IncorrectRequestError('Передан некорректный email'));
-  }
-
   bcrypt.hash(req.body.password, 10)
-    .then(hash => User.create({
+    .then((hash) => User.create({
+      ...req.body,
       password: hash,
-      email: req.body.email,gi
     }))
-    .then((newUser) => res.status(CREATED_CODE).send(newUser))
+    .then((newUser) => User.findById(newUser._id)
+      .then((user) => res.status(CREATED_CODE).send(user)))
     .catch((err) => {
       if (err.code === 11000) {
-        next(new ConflictError('Пользователь с такой почтой уже зарегистрирован'))
+        next(new ConflictError('Пользователь с такой почтой уже зарегистрирован'));
       }
 
       if (err.name === 'ValidationError') {
@@ -116,23 +113,23 @@ const updateAvatar = (req, res, next) => {
 };
 
 const login = (req, res, next) => {
-  const {email, password} = req.body;
+  const { email, password } = req.body;
 
-  if(!validator.isEmail(email)) {
+  if (!validator.isEmail(email)) {
     return next(new IncorrectRequestError('Передана некорректная почта'));
   }
 
   return User.findUserByCredentials(email, password)
-  .then(user =>{
-    const token = jwt.sign({_id: user._id}, 'some-secret-key', {expiresIn: '7d'});
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
 
-    res.cookie('jwt', token, {
+      res.cookie('jwt', token, {
         maxAge: 3600000,
-        httpOnly: true
-      }).end();
-  })
-  .catch(next)
-}
+        httpOnly: true,
+      }).send({ message: 'Успешная авторизация' });
+    })
+    .catch(next);
+};
 
 module.exports = {
   getUsers,
@@ -141,5 +138,5 @@ module.exports = {
   updateProfile,
   updateAvatar,
   login,
-  getMyProfileData
+  getMyProfileData,
 };
