@@ -15,7 +15,7 @@ router.post('/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
-  }),
+  }).unknown(true),
 }), createUser);
 router.use('/users', auth, userRoutes);
 router.use('/cards', auth, cardRoutes);

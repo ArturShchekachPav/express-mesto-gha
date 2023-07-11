@@ -125,7 +125,7 @@ const login = (req, res, next) => {
       res.cookie('jwt', token, {
         maxAge: 3600000,
         httpOnly: true,
-      }).end();
+      }).send({message: 'Успешная авторизация'});
     })
     .catch(next);
 };
