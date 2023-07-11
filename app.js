@@ -26,8 +26,9 @@ app.use(limiter);
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(routes);
+
 app.use(errors());
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
 
   res
