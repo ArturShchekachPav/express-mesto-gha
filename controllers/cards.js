@@ -27,17 +27,17 @@ const createCard = (req, res, next) => {
 const deleteCardById = (req, res, next) => {
   const { cardId } = req.params;
 
-  return Card.findByIdAndDelete(cardId)
+  return Card.findById(cardId)
     .then((card) => {
       if (!card) {
         throw new NotFoundError('Запрашиваемая карточка не найдена');
       }
 
-      if (card.owner._id !== req.user) {
+      if (card.owner.toString() !== req.user._id) {
         throw new ForbiddenError('Это не ваша карточка');
       }
 
-      return res.send(card);
+      return Card.findByIdAndDelete(cardId).then(deletedCard => res.send(deletedCard));
     }).catch((err) => {
       if (err.name === 'CastError') {
         next(new IncorrectRequestError('Переданы некорректные данные для удаления карточки'));
@@ -49,7 +49,7 @@ const deleteCardById = (req, res, next) => {
 
 const likeCard = (req, res, next) => Card.findByIdAndUpdate(
   req.params.cardId,
-  { $addToSet: { likes: req.user } }, // добавить _id в массив, если его там нет
+  { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
   { new: true },
 ).then((card) => {
   if (!card) {
@@ -67,7 +67,7 @@ const likeCard = (req, res, next) => Card.findByIdAndUpdate(
 
 const dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
   req.params.cardId,
-  { $pull: { likes: req.user } },
+  { $pull: { likes: req.user._id } },
   { new: true },
 ).then((card) => {
   if (!card) {
@@ -76,6 +76,7 @@ const dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
 
   return res.send(card);
 }).catch((err) => {
+  console.log([err, req.params.cardId, req.user]);
   if (err.name === 'CastError') {
     next(new IncorrectRequestError('Переданы некорректные данные для cнятия лайка'));
   }
