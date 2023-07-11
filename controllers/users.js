@@ -36,9 +36,8 @@ const createUser = (req, res, next) => {
       ...req.body,
       password: hash,
     }))
-    .then((newUser) => {
-      return User.findById(newUser._id).then(user => res.status(CREATED_CODE).send(user))
-    })
+    .then((newUser) => User.findById(newUser._id)
+      .then((user) => res.status(CREATED_CODE).send(user)))
     .catch((err) => {
       if (err.code === 11000) {
         next(new ConflictError('Пользователь с такой почтой уже зарегистрирован'));
@@ -127,7 +126,7 @@ const login = (req, res, next) => {
       res.cookie('jwt', token, {
         maxAge: 3600000,
         httpOnly: true,
-      }).send({message: 'Успешная авторизация'});
+      }).send({ message: 'Успешная авторизация' });
     })
     .catch(next);
 };

@@ -37,7 +37,7 @@ const deleteCardById = (req, res, next) => {
         throw new ForbiddenError('Это не ваша карточка');
       }
 
-      return Card.findByIdAndDelete(cardId).then(deletedCard => res.send(deletedCard));
+      return Card.findByIdAndDelete(cardId).then((deletedCard) => res.send(deletedCard));
     }).catch((err) => {
       if (err.name === 'CastError') {
         next(new IncorrectRequestError('Переданы некорректные данные для удаления карточки'));
@@ -76,7 +76,6 @@ const dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
 
   return res.send(card);
 }).catch((err) => {
-  console.log([err, req.params.cardId, req.user]);
   if (err.name === 'CastError') {
     next(new IncorrectRequestError('Переданы некорректные данные для cнятия лайка'));
   }
