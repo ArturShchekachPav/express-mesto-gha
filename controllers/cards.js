@@ -59,10 +59,10 @@ const likeCard = (req, res, next) => Card.findByIdAndUpdate(
   return res.send(card);
 }).catch((err) => {
   if (err.name === 'CastError') {
-    next(new NotFoundError('Переданы некорректные данные для постановки лайка'));
+    next(new IncorrectRequestError('Переданы некорректные данные для постановки лайка'));
   }
 
-  next();
+  next(err);
 });
 
 const dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
