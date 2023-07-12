@@ -4,6 +4,8 @@ const userRoutes = require('./user');
 const cardRoutes = require('./card');
 const { createUser, login } = require('../controllers/users');
 const auth = require('../middlewares/auth');
+const { urlRegex } = require('../utils/constants');
+const NotFoundError = require('../errors/not-found-error');
 
 router.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -17,11 +19,14 @@ router.post('/signup', celebrate({
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)/),
-  }).unknown(true),
+    avatar: Joi.string().pattern(urlRegex),
+  }),
 }), createUser);
+router.get('/signout', auth, (req, res) => {
+  res.clearCookie('jwt').send({ message: 'Выход' });
+});
 router.use('/users', auth, userRoutes);
 router.use('/cards', auth, cardRoutes);
-router.use('*', (req, res) => res.status(404).send({ message: 'некорретный путь запроса' }));
+router.use('*', auth, (req, res, next) => next(new NotFoundError('Некорректный путь запроса')));
 
 module.exports = router;

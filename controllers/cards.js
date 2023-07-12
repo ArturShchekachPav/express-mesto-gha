@@ -2,10 +2,9 @@ const Card = require('../models/card');
 const NotFoundError = require('../errors/not-found-error');
 const IncorrectRequestError = require('../errors/incorrect-request-error');
 const ForbiddenError = require('../errors/forbidden-error');
-const CREATED_CODE = require('../utils/constants');
+const { CREATED_CODE } = require('../utils/constants');
 
 const getCards = (req, res, next) => Card.find({})
-  .populate(['owner', 'likes'])
   .then((cards) => res.send(cards))
   .catch(next);
 
@@ -18,9 +17,9 @@ const createCard = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new IncorrectRequestError('Переданы некорректные данные при создании карточки'));
+      } else {
+        next(err);
       }
-
-      next(err);
     });
 };
 
@@ -41,9 +40,9 @@ const deleteCardById = (req, res, next) => {
     }).catch((err) => {
       if (err.name === 'CastError') {
         next(new IncorrectRequestError('Переданы некорректные данные для удаления карточки'));
+      } else {
+        next(err);
       }
-
-      next(err);
     });
 };
 
@@ -78,9 +77,9 @@ const dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
 }).catch((err) => {
   if (err.name === 'CastError') {
     next(new IncorrectRequestError('Переданы некорректные данные для cнятия лайка'));
+  } else {
+    next(err);
   }
-
-  next(err);
 });
 
 module.exports = {
